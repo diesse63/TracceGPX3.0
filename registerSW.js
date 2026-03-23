@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/TracceGPX3.0/sw.js', { scope: '/TracceGPX3.0/' })})}
