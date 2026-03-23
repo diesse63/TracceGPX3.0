@@ -96,8 +96,17 @@ function App() {
         let buffer = await get('saved_tracks_db');
 
         if (!buffer) {
+          if (!navigator.onLine) {
+            setLoading({
+              message: "Nessun database disponibile. Connettiti a internet almeno una volta per scaricare i dati.",
+              retry: true
+            });
+            return;
+          }
           setLoading("Primo avvio: download archivio...");
-          const response = await fetch('/tracks_pwa.db');
+          // Usa il path corretto per GitHub Pages
+          const dbUrl = `${import.meta.env.BASE_URL}tracks_pwa.db`;
+          const response = await fetch(dbUrl);
           if (!response.ok) throw new Error("File tracks_pwa.db non trovato!");
           buffer = await response.arrayBuffer();
           await set('saved_tracks_db', buffer);
@@ -107,7 +116,7 @@ function App() {
         setDb(database);
         initMap(database);
       } catch (err) {
-        setLoading("ERRORE: " + err.message);
+        setLoading({ message: "ERRORE: " + err.message, retry: true });
         console.error(err);
       }
     }
@@ -304,8 +313,13 @@ function App() {
       </div>
 
       {loading && (
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, background: '#ffeb3b', padding: '10px', textAlign: 'center', zIndex: 9999, fontSize: '13px', fontWeight: 'bold' }}>
-          {loading}
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, background: '#ffeb3b', padding: '10px', textAlign: 'center', zIndex: 9999, fontSize: '13px', fontWeight: 'bold', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          {typeof loading === 'string' ? loading : loading.message}
+          {loading.retry && (
+            <button style={{ marginTop: 12, padding: '6px 18px', borderRadius: 8, border: 'none', background: '#1976d2', color: '#fff', fontWeight: 'bold', fontSize: 14, cursor: 'pointer' }} onClick={() => window.location.reload()}>
+              Riprova
+            </button>
+          )}
         </div>
       )}
 
